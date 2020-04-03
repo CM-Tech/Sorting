@@ -1,34 +1,38 @@
-$("#c").attr("width", w);
-$("#c").attr("height", h);
+var w = window.innerWidth;
+var h = window.innerHeight;
+var canvas = document.getElementById("c");
+canvas.width = w;
+canvas.height = h;
+var ctx = canvas.getContext("2d");
 //var quickPos=0;
+var bars = 128;
 var mergeReturns = [];
 var qA = 0;
 var qB = 0;
 var qAs = [];
 var qBs = [];
-var snaps=[];
+var snaps = [];
 var toAdd = [];
 var recordPos = 0;
 var bubblePos = 1;
 var toSort = [];
-var dis=[];
-for (var i = 0; i < 200; i++) {
+var dis = [];
+for (var i = 0; i < bars; i++) {
     toAdd[i] = i;
 }
-/*for(var i=0;i<200;i++){
-    toSort[i]=toAdd[199-i];
+/*for(var i=0;i<bars;i++){
+    toSort[i]=toAdd[bars-1-i];
 }*/
-/*for (var i = 0; i < 200; i++) {
+for (var i = 0; i < bars; i++) {
     var choice = Math.floor(Math.random() * (toAdd.length - 0.1));
     toSort[i] = toAdd[choice];
-    delete toAdd[choice];
-}*/
-for (var i = 0; i < 200; i++) {
-    toSort[i] = Math.floor(Math.random() * (toAdd.length - 0.1));
+    toAdd.splice(choice, 1);
 }
+/*for (var i = 0; i < bars; i++) {
+    toSort[i] = Math.floor(Math.random() * (toAdd.length - 0.1));
+}*/
 
-var c = document.getElementById("c");
-var ctx = c.getContext("2d");
+
 s();
 window.setInterval(tick, 10);
 //window.setInterval(bubble,1);
@@ -37,37 +41,36 @@ window.setInterval(tick, 10);
 
 function s() {
     toSort = mergeSort(toSort, 0);
-    console.log(toSort);
 }
 
 function tick() {
-    w = $("body").width() - 2;
-    h = $("body").height() - 2;
+    w = window.innerWidth;
+    h = window.innerHeight;
     if (recordPos < qBs.length) {
         qA = qAs[recordPos];
         qB = qBs[recordPos];
-        toSort=snaps[recordPos];
+        toSort = snaps[recordPos];
         recordPos++;
     }
-    $("#c").attr("width", w);
-    $("#c").attr("height", h);
-    $(".toggle").attr("height", 30);
+    canvas.width = w;
+    canvas.height = h;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, w, h);
-    ctx.lineWidth = w / 200;
-    for (var i = 0; i < 200; i++) {
-
-        ctx.strokeStyle = "white";
+    var lastX = 0;
+    for (var i = 0; i < bars; i++) {
+        ctx.fillStyle = "white";
         if (i == qA) {
-            ctx.strokeStyle = "red"
+            ctx.fillStyle = "#FF1744";
         };
         if (i == qB) {
-            ctx.strokeStyle = "green"
+            ctx.fillStyle = "#00E676";
         };
+        var drawX = Math.floor(w / bars * (i + 1));
+        var barH = Math.round(h * (((toSort[i] + 1) / bars)));
         ctx.beginPath();
-        ctx.moveTo((i + 0.5) / 200 * w, h);
-        ctx.lineTo((i + 0.5) / 200 * w, h * (1 - ((toSort[i] + 0.5) / 200)));
-        ctx.stroke();
+        ctx.rect(lastX + 1, h - barH, Math.max(drawX - lastX - 1, 1), barH);
+        ctx.fill();
+        lastX = drawX;
     }
 }
 
@@ -81,30 +84,30 @@ function merge(left, right, s, s2) {
     while (il < left.length && ir < right.length) {
         qA = il + s;
         qB = ir + s2;
-        
-        
+
+
         if (left[il] < right[ir]) {
 
 
             result = result.concat([left[il++]]);
-            toSort[s+result.length-1]=left[il-1];
+            toSort[s + result.length - 1] = left[il - 1];
             snaps = snaps.concat([toSort.concat([0])]);
         } else {
             result = result.concat([right[ir++]]);
-            toSort[s+result.length-1]=right[ir-1];
+            toSort[s + result.length - 1] = right[ir - 1];
             snaps = snaps.concat([toSort.concat([0])]);
         }
         qAs = qAs.concat([qA]);
         qBs = qBs.concat([qB]);
     }
 
-        var res=result.concat(left.slice(il)).concat(right.slice(ir));
-        for(var m=0;m<res.length;m++){
-            toSort[s+m]=res[m];
-        }
-         snaps = snaps.concat([toSort.concat([])]);
-        qAs = qAs.concat([qA]);
-        qBs = qBs.concat([qB]);
+    var res = result.concat(left.slice(il)).concat(right.slice(ir));
+    for (var m = 0; m < res.length; m++) {
+        toSort[s + m] = res[m];
+    }
+    snaps = snaps.concat([toSort.concat([])]);
+    qAs = qAs.concat([qA]);
+    qBs = qBs.concat([qB]);
     return result.concat(left.slice(il)).concat(right.slice(ir));
 }
 
